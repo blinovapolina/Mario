@@ -17,6 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_speed = -16
 
         self.status = 'idle'
+        self.face_right = True
 
     def import_assets(self):
         chatacter_path = 'graphics/character/'
@@ -38,15 +39,21 @@ class Player(pygame.sprite.Sprite):
         if self.frame_index >= len(animation):
             self.frame_index = 0
 
-        self.image = animation[int(self.frame_index)]
+        image = animation[int(self.frame_index)]
+        if self.face_right:
+            self.image = image
+        else:
+            self.image = pygame.transform.flip(image, True, False)
 
     def get_input(self):
         buttons = pygame.key.get_pressed()
 
         if buttons[pygame.K_RIGHT]:
             self.direction.x = 1
+            self.face_right = True
         elif buttons[pygame.K_LEFT]:
             self.direction.x = -1
+            self.face_right = False
         else:
             self.direction.x = 0
 
