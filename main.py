@@ -1,6 +1,7 @@
 import sys
 import pygame
 from settings import *
+from tiles import Tile
 
 
 def main():
