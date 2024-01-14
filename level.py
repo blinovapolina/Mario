@@ -8,6 +8,8 @@ class Level:
         self.display_surface = surface
         self.setup_level(level_data)
 
+        self.world_delta = 0
+
     def setup_level(self, layout):
         self.tiles = pygame.sprite.Group()
         for index_row, row in enumerate(layout):
@@ -17,4 +19,5 @@ class Level:
                     self.tiles.add(tile)
 
     def run(self):
+        self.tiles.update(self.world_delta)
         self.tiles.draw(self.display_surface)
