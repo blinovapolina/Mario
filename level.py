@@ -24,9 +24,25 @@ class Level:
                     player = Player((index_col * tile_size, index_row * tile_size))
                     self.player.add(player)
 
+    def scroll_x(self):
+        player = self.player.sprite
+        player_x = player.rect.centerx
+        direction_x = player.direction.x
+
+        if player_x < screen_width / 4 and direction_x == -1:
+            self.world_delta = 8
+            player.speed = 0
+        elif player_x > screen_width - (screen_width / 4) and direction_x == 1:
+            self.world_delta = -8
+            player.speed = 0
+        else:
+            self.world_delta = 0
+            player.speed = 8
+
     def run(self):
         self.tiles.update(self.world_delta)
         self.tiles.draw(self.display_surface)
 
         self.player.update()
         self.player.draw(self.display_surface)
+        self.scroll_x()
