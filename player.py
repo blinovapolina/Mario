@@ -8,6 +8,7 @@ class Player(pygame.sprite.Sprite):
         self.image.fill('red')
         self.rect = self.image.get_rect(topleft=pos)
         self.direction = pygame.math.Vector2(0, 0)
+        self.speed = 8
 
     def get_input(self):
         buttons = pygame.key.get_pressed()
@@ -21,4 +22,4 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.get_input()
-        self.rect.x += self.direction.x
+        self.rect.x += self.direction.x * self.speed
