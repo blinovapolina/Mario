@@ -1,7 +1,6 @@
 import sys
 import pygame
 from settings import *
-from tiles import Tile
 from level import Level
 
 
