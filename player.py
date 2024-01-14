@@ -18,6 +18,10 @@ class Player(pygame.sprite.Sprite):
 
         self.status = 'idle'
         self.face_right = True
+        self.on_ground = False
+        self.on_ceiling = False
+        self.on_left = False
+        self.on_right = False
 
     def import_assets(self):
         chatacter_path = 'graphics/character/'
@@ -44,6 +48,13 @@ class Player(pygame.sprite.Sprite):
             self.image = image
         else:
             self.image = pygame.transform.flip(image, True, False)
+
+        if self.on_ground:
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+        elif self.on_ceiling:
+            self.rect = self.image.get_rect(midtop=self.rect.midtop)
+        else:
+            self.rect = self.image.get_rect(center=self.rect.center)
 
     def get_input(self):
         buttons = pygame.key.get_pressed()

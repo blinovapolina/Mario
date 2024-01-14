@@ -65,6 +65,11 @@ class Level:
                     player.direction.y = 0
                     player.on_ceiling = True
 
+        if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
+            player.on_ground = False
+        if player.on_ceiling and player.direction.y > 0:
+            player.on_ceiling = False
+
     def run(self):
         self.tiles.update(self.world_delta)
         self.tiles.draw(self.display_surface)
