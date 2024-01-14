@@ -65,7 +65,6 @@ class Level:
                     player.direction.y = 0
                     player.on_ceiling = True
 
-
     def run(self):
         self.tiles.update(self.world_delta)
         self.tiles.draw(self.display_surface)
