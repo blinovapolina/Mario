@@ -1,19 +1,57 @@
 import pygame
-from tiles import Tile
+from tiles import Tile, StaticTile, Crate, AnimatedTile
 from settings import *
 from player import Player
 from particles import ParticleEffect
+from support import *
 
 
 class Level:
     def __init__(self, level_data, surface):
         self.display_surface = surface
-        self.setup_level(level_data)
-        self.world_delta = 0
+        # self.setup_level(level_data)
+        self.world_delta = -5
         self.current_x = 0
+
+        terrain_layout = import_csv(level_data['terrain'])
+        self.terrain_sprites = self.create_group(terrain_layout, 'terrain')
+
+        grass_layout = import_csv(level_data['grass'])
+        self.grass_sprites = self.create_group(grass_layout, 'grass')
+
+        crates_layout = import_csv(level_data['crate'])
+        self.crates_sprites = self.create_group(crates_layout, 'crate')
+
+        coins_layout = import_csv(level_data['coins'])
+        self.coins_sprites = self.create_group(coins_layout, 'coins')
 
         self.dust_sprite = pygame.sprite.GroupSingle()
         self.player_on_ground = False
+
+    def create_group(self, layout, tile_type):
+        group = pygame.sprite.Group()
+
+        for index_row, row in enumerate(layout):
+            for index_col, cell in enumerate(row):
+                if cell != '-1':
+                    x = index_col * tile_size
+                    y = index_row * tile_size
+
+                    if tile_type == 'terrain':
+                        terrain_tile_list = import_cut_graphics('graphics/terrain/terrain_tiles.png')
+                        tile_surface = terrain_tile_list[int(cell)]
+                        sprite = StaticTile(tile_size, (x, y), tile_surface)
+                    if tile_type == 'grass':
+                        grass_tile_list = import_cut_graphics('graphics/decoration/grass/grass.png')
+                        tile_surface = grass_tile_list[int(cell)]
+                        sprite = StaticTile(tile_size, (x, y), tile_surface)
+                    if tile_type == 'crate':
+                        sprite = Crate(tile_size, (x, y))
+                    if tile_type == 'coins':
+                        sprite = AnimatedTile(tile_size, (x, y), 'graphics/coins/gold')
+
+                    group.add(sprite)
+        return group
 
     def create_jump_particles(self, pos):
         if self.player.sprite.face_right:
@@ -111,13 +149,26 @@ class Level:
         self.dust_sprite.update(self.world_delta)
         self.dust_sprite.draw(self.display_surface)
 
-        self.tiles.update(self.world_delta)
-        self.tiles.draw(self.display_surface)
-        self.scroll_x()
+        self.terrain_sprites.update(self.world_delta)
+        self.terrain_sprites.draw(self.display_surface)
 
-        self.player.update()
-        self.horizontal_move_collision()
-        self.get_player_on_ground()
-        self.vertical_move_collision()
-        self.create_landing_dust()
-        self.player.draw(self.display_surface)
+        self.grass_sprites.update(self.world_delta)
+        self.grass_sprites.draw(self.display_surface)
+
+        self.crates_sprites.update(self.world_delta)
+        self.crates_sprites.draw(self.display_surface)
+
+        self.coins_sprites.update(self.world_delta)
+        self.coins_sprites.draw(self.display_surface)
+
+        #
+        # self.tiles.update(self.world_delta)
+        # self.tiles.draw(self.display_surface)
+        # self.scroll_x()
+        #
+        # self.player.update()
+        # self.horizontal_move_collision()
+        # self.get_player_on_ground()
+        # self.vertical_move_collision()
+        # self.create_landing_dust()
+        # self.player.draw(self.display_surface)

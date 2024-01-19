@@ -2,13 +2,14 @@ import sys
 import pygame
 from settings import *
 from level import Level
+from level_data import *
 
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
-    level = Level(level_map, screen)
+    level = Level(level_0, screen)
 
     running = True
     fps = 60
