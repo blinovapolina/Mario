@@ -42,3 +42,19 @@ class AnimatedTile(Tile):
     def update(self, x_delta):
         self.animate()
         self.rect.x += x_delta
+
+
+class Coin(AnimatedTile):
+    def __init__(self, size, position, path):
+        super().__init__(size, position, path)
+        x = position[0]
+        y = position[1]
+        self.rect = self.image.get_rect(center=(x + int(size / 2), y + int(size / 2)))
+
+
+class Palm(AnimatedTile):
+    def __init__(self, size, position, path, add_y):
+        super().__init__(size, position, path)
+        x = position[0]
+        y = position[1]
+        self.rect = self.image.get_rect(topleft=(x, y - add_y))

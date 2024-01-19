@@ -20,7 +20,7 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        screen.fill('black')
+        screen.fill('grey')
         level.run()
 
         pygame.display.update()

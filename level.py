@@ -1,5 +1,5 @@
 import pygame
-from tiles import Tile, StaticTile, Crate, AnimatedTile
+from tiles import *
 from settings import *
 from player import Player
 from particles import ParticleEffect
@@ -10,7 +10,7 @@ class Level:
     def __init__(self, level_data, surface):
         self.display_surface = surface
         # self.setup_level(level_data)
-        self.world_delta = -5
+        self.world_delta = -2
         self.current_x = 0
 
         terrain_layout = import_csv(level_data['terrain'])
@@ -24,6 +24,12 @@ class Level:
 
         coins_layout = import_csv(level_data['coins'])
         self.coins_sprites = self.create_group(coins_layout, 'coins')
+
+        palms_layout = import_csv(level_data['palms'])
+        self.palms_sprites = self.create_group(palms_layout, 'palms')
+
+        bg_palms_layout = import_csv(level_data['bg_palms'])
+        self.bg_palms_sprites = self.create_group(bg_palms_layout, 'bg_palms')
 
         self.dust_sprite = pygame.sprite.GroupSingle()
         self.player_on_ground = False
@@ -47,8 +53,19 @@ class Level:
                         sprite = StaticTile(tile_size, (x, y), tile_surface)
                     if tile_type == 'crate':
                         sprite = Crate(tile_size, (x, y))
+
                     if tile_type == 'coins':
-                        sprite = AnimatedTile(tile_size, (x, y), 'graphics/coins/gold')
+                        if cell == '0':
+                            sprite = Coin(tile_size, (x, y), 'graphics/coins/gold')
+                        elif cell == '1':
+                            sprite = Coin(tile_size, (x, y), 'graphics/coins/silver')
+                    if tile_type == 'palms':
+                        if cell == '0':
+                            sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_small', 39)
+                        elif cell == '1':
+                            sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_large', 65)
+                    if tile_type == 'bg_palms':
+                        sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_bg', 65)
 
                     group.add(sprite)
         return group
@@ -149,6 +166,9 @@ class Level:
         self.dust_sprite.update(self.world_delta)
         self.dust_sprite.draw(self.display_surface)
 
+        self.bg_palms_sprites.update(self.world_delta)
+        self.bg_palms_sprites.draw(self.display_surface)
+
         self.terrain_sprites.update(self.world_delta)
         self.terrain_sprites.draw(self.display_surface)
 
@@ -160,6 +180,9 @@ class Level:
 
         self.coins_sprites.update(self.world_delta)
         self.coins_sprites.draw(self.display_surface)
+
+        self.palms_sprites.update(self.world_delta)
+        self.palms_sprites.draw(self.display_surface)
 
         #
         # self.tiles.update(self.world_delta)

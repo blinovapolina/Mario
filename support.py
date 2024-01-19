@@ -37,7 +37,7 @@ def import_cut_graphics(path):
         for col in range(num_x):
             x = col * tile_size
             y = row * tile_size
-            new_surface = pygame.Surface((tile_size, tile_size))
+            new_surface = pygame.Surface((tile_size, tile_size), flags=)
             new_surface.blit(surface, (0, 0), pygame.Rect(x, y, tile_size, tile_size))
             tiles.append(new_surface)
 
