@@ -2,6 +2,7 @@ import pygame
 from tiles import *
 from settings import *
 from player import Player
+from enemy import Enemy
 from particles import ParticleEffect
 from support import *
 
@@ -13,14 +14,17 @@ class Level:
         self.world_delta = -2
         self.current_x = 0
 
+        player_layout = import_csv(level_data['player'])
+        self.player = pygame.sprite.GroupSingle()
+
         terrain_layout = import_csv(level_data['terrain'])
         self.terrain_sprites = self.create_group(terrain_layout, 'terrain')
 
-        grass_layout = import_csv(level_data['grass'])
-        self.grass_sprites = self.create_group(grass_layout, 'grass')
-
         crates_layout = import_csv(level_data['crate'])
         self.crates_sprites = self.create_group(crates_layout, 'crate')
+
+        grass_layout = import_csv(level_data['grass'])
+        self.grass_sprites = self.create_group(grass_layout, 'grass')
 
         coins_layout = import_csv(level_data['coins'])
         self.coins_sprites = self.create_group(coins_layout, 'coins')
@@ -30,6 +34,12 @@ class Level:
 
         bg_palms_layout = import_csv(level_data['bg_palms'])
         self.bg_palms_sprites = self.create_group(bg_palms_layout, 'bg_palms')
+
+        enemy_layout = import_csv(level_data['enemies'])
+        self.enemies_sprites = self.create_group(enemy_layout, 'enemies')
+
+        special_layout = import_csv(level_data['special'])
+        self.special_sprites = self.create_group(special_layout, 'special_layout')
 
         self.dust_sprite = pygame.sprite.GroupSingle()
         self.player_on_ground = False
@@ -66,6 +76,12 @@ class Level:
                             sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_large', 65)
                     if tile_type == 'bg_palms':
                         sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_bg', 65)
+
+                    if tile_type == 'enemies':
+                        sprite = Enemy(tile_size, (x, y))
+
+                    if tile_type == 'special_layout':
+                        sprite = Tile(tile_size, (x, y))
 
                     group.add(sprite)
         return group
@@ -162,6 +178,11 @@ class Level:
         if player.on_ceiling and player.direction.y > 0:
             player.on_ceiling = False
 
+    def enemy_reverse_speed(self):
+        for enemy in self.enemies_sprites.sprites():
+            if pygame.sprite.spritecollide(enemy, self.special_sprites, False):
+                enemy.change_speed()
+
     def run(self):
         self.dust_sprite.update(self.world_delta)
         self.dust_sprite.draw(self.display_surface)
@@ -171,6 +192,12 @@ class Level:
 
         self.terrain_sprites.update(self.world_delta)
         self.terrain_sprites.draw(self.display_surface)
+
+        self.special_sprites.update(self.world_delta)
+        # self.special_sprites.draw(self.display_surface)
+        self.enemies_sprites.update(self.world_delta)
+        self.enemy_reverse_speed()
+        self.enemies_sprites.draw(self.display_surface)
 
         self.grass_sprites.update(self.world_delta)
         self.grass_sprites.draw(self.display_surface)
