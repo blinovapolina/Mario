@@ -4,6 +4,7 @@ from settings import *
 from player import Player
 from enemy import Enemy
 from particles import ParticleEffect
+from decorations import *
 from support import *
 
 
@@ -41,6 +42,10 @@ class Level:
 
         special_layout = import_csv(level_data['special'])
         self.special_sprites = self.create_group(special_layout, 'special_layout')
+
+        self.sky = Sky(8)
+        self.water = Water(screen_height - 20, len(terrain_layout[0]) * tile_size)
+        self.clouds = Clouds(380, len(terrain_layout[0]) * tile_size, 30)
 
         # self.dust_sprite = pygame.sprite.GroupSingle()
         # self.player_on_ground = False
@@ -186,6 +191,9 @@ class Level:
                 enemy.change_speed()
 
     def run(self):
+        self.sky.draw(self.display_surface)
+        self.clouds.draw(self.display_surface, self.world_delta)
+
         # self.dust_sprite.update(self.world_delta)
         # self.dust_sprite.draw(self.display_surface)
 
@@ -215,6 +223,8 @@ class Level:
 
         self.goal_player.update(self.world_delta)
         self.goal_player.draw(self.display_surface)
+
+        self.water.draw(self.display_surface, self.world_delta)
 
         #
         # self.tiles.update(self.world_delta)
