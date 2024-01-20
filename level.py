@@ -11,7 +11,7 @@ from support import *
 class Level:
     def __init__(self, level_data, surface):
         self.display_surface = surface
-        self.world_delta = -2
+        self.world_delta = 0
         self.current_x = 0
 
         player_layout = import_csv(level_data['player'])
@@ -47,8 +47,8 @@ class Level:
         self.water = Water(screen_height - 20, len(terrain_layout[0]) * tile_size)
         self.clouds = Clouds(380, len(terrain_layout[0]) * tile_size, 30)
 
-        # self.dust_sprite = pygame.sprite.GroupSingle()
-        # self.player_on_ground = False
+        self.dust_sprite = pygame.sprite.GroupSingle()
+        self.player_on_ground = False
 
     def create_group(self, layout, tile_type):
         group = pygame.sprite.Group()
@@ -98,12 +98,10 @@ class Level:
                 x = index_col * tile_size
                 y = index_row * tile_size
                 if cell == '0':
-                    print('player goes here')
+                    sprite = Player((x, y), self.display_surface, self.create_jump_particles)
+                    self.player.add(sprite)
                 if cell == '1':
                     hat_surface = pygame.image.load('graphics/character/hat.png').convert_alpha()
-                    # player = Player((index_col * tile_size, index_row * tile_size), self.display_surface,
-                    #                 self.create_jump_particles)
-                    # self.player.add(player)
                     sprite = StaticTile(tile_size, (x, y), hat_surface)
                     self.goal_player.add(sprite)
 
@@ -149,7 +147,7 @@ class Level:
         player = self.player.sprite
         player.rect.x += player.direction.x * player.speed
 
-        for tile in self.tiles.sprites():
+        for tile in self.terrain_sprites.sprites() + self.crates_sprites.sprites() + self.palms_sprites.sprites():
             if tile.rect.colliderect(player.rect):
                 if player.direction.x == 1:
                     player.rect.right = tile.rect.left
@@ -169,7 +167,7 @@ class Level:
         player = self.player.sprite
         player.add_gravity()
 
-        for tile in self.tiles.sprites():
+        for tile in self.terrain_sprites.sprites() + self.crates_sprites.sprites() + self.palms_sprites.sprites():
             if tile.rect.colliderect(player.rect):
                 if player.direction.y > 0:
                     player.rect.bottom = tile.rect.top
@@ -191,11 +189,13 @@ class Level:
                 enemy.change_speed()
 
     def run(self):
+        self.scroll_x()
+
         self.sky.draw(self.display_surface)
         self.clouds.draw(self.display_surface, self.world_delta)
 
-        # self.dust_sprite.update(self.world_delta)
-        # self.dust_sprite.draw(self.display_surface)
+        self.dust_sprite.update(self.world_delta)
+        self.dust_sprite.draw(self.display_surface)
 
         self.bg_palms_sprites.update(self.world_delta)
         self.bg_palms_sprites.draw(self.display_surface)
@@ -204,7 +204,6 @@ class Level:
         self.terrain_sprites.draw(self.display_surface)
 
         self.special_sprites.update(self.world_delta)
-        # self.special_sprites.draw(self.display_surface)
         self.enemies_sprites.update(self.world_delta)
         self.enemy_reverse_speed()
         self.enemies_sprites.draw(self.display_surface)
@@ -224,16 +223,11 @@ class Level:
         self.goal_player.update(self.world_delta)
         self.goal_player.draw(self.display_surface)
 
-        self.water.draw(self.display_surface, self.world_delta)
+        self.player.update()
+        self.horizontal_move_collision()
+        self.get_player_on_ground()
+        self.vertical_move_collision()
+        self.create_landing_dust()
+        self.player.draw(self.display_surface)
 
-        #
-        # self.tiles.update(self.world_delta)
-        # self.tiles.draw(self.display_surface)
-        # self.scroll_x()
-        #
-        # self.player.update()
-        # self.horizontal_move_collision()
-        # self.get_player_on_ground()
-        # self.vertical_move_collision()
-        # self.create_landing_dust()
-        # self.player.draw(self.display_surface)
+        self.water.draw(self.display_surface, self.world_delta)
