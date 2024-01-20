@@ -10,12 +10,13 @@ from support import *
 class Level:
     def __init__(self, level_data, surface):
         self.display_surface = surface
-        # self.setup_level(level_data)
         self.world_delta = -2
         self.current_x = 0
 
         player_layout = import_csv(level_data['player'])
         self.player = pygame.sprite.GroupSingle()
+        self.goal_player = pygame.sprite.GroupSingle()
+        self.setup_player(player_layout)
 
         terrain_layout = import_csv(level_data['terrain'])
         self.terrain_sprites = self.create_group(terrain_layout, 'terrain')
@@ -41,8 +42,8 @@ class Level:
         special_layout = import_csv(level_data['special'])
         self.special_sprites = self.create_group(special_layout, 'special_layout')
 
-        self.dust_sprite = pygame.sprite.GroupSingle()
-        self.player_on_ground = False
+        # self.dust_sprite = pygame.sprite.GroupSingle()
+        # self.player_on_ground = False
 
     def create_group(self, layout, tile_type):
         group = pygame.sprite.Group()
@@ -86,6 +87,21 @@ class Level:
                     group.add(sprite)
         return group
 
+    def setup_player(self, layout):
+        for index_row, row in enumerate(layout):
+            for index_col, cell in enumerate(row):
+                x = index_col * tile_size
+                y = index_row * tile_size
+                if cell == '0':
+                    print('player goes here')
+                if cell == '1':
+                    hat_surface = pygame.image.load('graphics/character/hat.png').convert_alpha()
+                    # player = Player((index_col * tile_size, index_row * tile_size), self.display_surface,
+                    #                 self.create_jump_particles)
+                    # self.player.add(player)
+                    sprite = StaticTile(tile_size, (x, y), hat_surface)
+                    self.goal_player.add(sprite)
+
     def create_jump_particles(self, pos):
         if self.player.sprite.face_right:
             pos -= pygame.math.Vector2(10, 5)
@@ -108,20 +124,6 @@ class Level:
                 offset = pygame.math.Vector2(-10, 15)
             fall_dust_particle = ParticleEffect(self.player.sprite.rect.midbottom - offset, 'land')
             self.dust_sprite.add(fall_dust_particle)
-
-    def setup_level(self, layout):
-        self.tiles = pygame.sprite.Group()
-        self.player = pygame.sprite.GroupSingle()
-
-        for index_row, row in enumerate(layout):
-            for index_col, cell in enumerate(row):
-                if cell == 'X':
-                    tile = Tile((index_col * tile_size, index_row * tile_size), tile_size)
-                    self.tiles.add(tile)
-                if cell == 'P':
-                    player = Player((index_col * tile_size, index_row * tile_size), self.display_surface,
-                                    self.create_jump_particles)
-                    self.player.add(player)
 
     def scroll_x(self):
         player = self.player.sprite
@@ -184,8 +186,8 @@ class Level:
                 enemy.change_speed()
 
     def run(self):
-        self.dust_sprite.update(self.world_delta)
-        self.dust_sprite.draw(self.display_surface)
+        # self.dust_sprite.update(self.world_delta)
+        # self.dust_sprite.draw(self.display_surface)
 
         self.bg_palms_sprites.update(self.world_delta)
         self.bg_palms_sprites.draw(self.display_surface)
@@ -210,6 +212,9 @@ class Level:
 
         self.palms_sprites.update(self.world_delta)
         self.palms_sprites.draw(self.display_surface)
+
+        self.goal_player.update(self.world_delta)
+        self.goal_player.draw(self.display_surface)
 
         #
         # self.tiles.update(self.world_delta)
