@@ -2,6 +2,7 @@ import pygame
 import sys
 from level import Level
 from menu import *
+from info_graphics import *
 
 
 class Game:
@@ -11,9 +12,11 @@ class Game:
         self.max_level = 2
         self.max_health = 100
         self.coins = 0
-        
+
         self.menu = Menu(0, self.max_level, screen, self.create_level)
         self.status = 'menu'
+
+        self.info = Info_graphics(screen)
 
     def create_level(self, current_level):
         self.level = Level(current_level, self.screen, self.create_menu)
@@ -30,6 +33,8 @@ class Game:
             self.menu.run()
         else:
             self.level.run()
+            self.info.show_health(50, 100)
+            self.info.show_coins(self.coins)
 
 
 def main():
