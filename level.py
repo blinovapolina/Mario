@@ -10,8 +10,9 @@ from level_data import *
 
 
 class Level:
-    def __init__(self, current_level, surface, create_menu):
+    def __init__(self, current_level, surface, create_menu, change_coins):
         self.display_surface = surface
+        self.change_coins = change_coins
         self.world_delta = 0
         self.current_x = 0
 
@@ -79,9 +80,9 @@ class Level:
 
                     if tile_type == 'coins':
                         if cell == '0':
-                            sprite = Coin(tile_size, (x, y), 'graphics/coins/gold')
+                            sprite = Coin(tile_size, (x, y), 'graphics/coins/gold', 3)
                         elif cell == '1':
-                            sprite = Coin(tile_size, (x, y), 'graphics/coins/silver')
+                            sprite = Coin(tile_size, (x, y), 'graphics/coins/silver', 1)
                     if tile_type == 'palms':
                         if cell == '0':
                             sprite = Palm(tile_size, (x, y), 'graphics/terrain/palm_small', 39)
@@ -207,8 +208,27 @@ class Level:
             self.create_menu(self.current_level, 0)
 
     def check_win(self):
-        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False):
+        if pygame.sprite.spritecollide(self.player.sprite, self.goal_player, False):
             self.create_menu(self.current_level, self.new_max_level)
+
+    def check_coin_collisions(self):
+        coins_collided = pygame.sprite.spritecollide(self.player.sprite, self.coins_sprites, True)
+        if coins_collided:
+            for coin in coins_collided:
+                self.change_coins(coin.value)
+
+    def check_enemy_collisions(self):
+        enemy_collisions = pygame.sprite.spritecollide(self.player.sprite, self.enemies_sprites, False)
+        if enemy_collisions:
+            for enemy in enemy_collisions:
+                enemy_center = enemy.rect.centery
+                enemy_top = enemy.rect.top
+                player_bottom = self.player.sprite.rect.bottom
+                if enemy_top < player_bottom < enemy_center and self.player.sprite.direction.y >= 0:
+                    self.player.sprite.direction.y = -15
+                    enemy.kill()
+                else:
+                    self.player.sprite.get_damage()
 
     def run(self):
         self.scroll_x()
@@ -251,5 +271,11 @@ class Level:
         self.vertical_move_collision()
         self.create_landing_dust()
         self.player.draw(self.display_surface)
+
+        self.check_death()
+        self.check_win()
+
+        self.check_enemy_collisions()
+        self.check_coin_collisions()
 
         self.water.draw(self.display_surface, self.world_delta)

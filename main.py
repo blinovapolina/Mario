@@ -11,6 +11,7 @@ class Game:
 
         self.max_level = 2
         self.max_health = 100
+        self.current_health = 100
         self.coins = 0
 
         self.menu = Menu(0, self.max_level, screen, self.create_level)
@@ -19,7 +20,7 @@ class Game:
         self.info = Info_graphics(screen)
 
     def create_level(self, current_level):
-        self.level = Level(current_level, self.screen, self.create_menu)
+        self.level = Level(current_level, self.screen, self.create_menu, self.change_coins)
         self.status = 'level'
 
     def create_menu(self, current_level, new_max_level):
@@ -28,12 +29,15 @@ class Game:
         self.menu = Menu(current_level, self.max_level, self.screen, self.create_level)
         self.status = 'menu'
 
+    def change_coins(self, amount):
+        self.coins += amount
+
     def run(self):
         if self.status == 'menu':
             self.menu.run()
         else:
             self.level.run()
-            self.info.show_health(50, 100)
+            self.info.show_health(self.current_health, self.max_health)
             self.info.show_coins(self.coins)
 
 
