@@ -6,13 +6,19 @@ from enemy import Enemy
 from particles import ParticleEffect
 from decorations import *
 from support import *
+from level_data import *
 
 
 class Level:
-    def __init__(self, level_data, surface):
+    def __init__(self, current_level, surface, create_menu):
         self.display_surface = surface
         self.world_delta = 0
         self.current_x = 0
+
+        self.current_level = current_level
+        level_data = levels[current_level]
+        self.new_max_level = level_data['max_level']
+        self.create_menu = create_menu
 
         player_layout = import_csv(level_data['player'])
         self.player = pygame.sprite.GroupSingle()
@@ -58,6 +64,7 @@ class Level:
                 if cell != '-1':
                     x = index_col * tile_size
                     y = index_row * tile_size
+                    sprite = ''
 
                     if tile_type == 'terrain':
                         terrain_tile_list = import_cut_graphics('graphics/terrain/terrain_tiles.png')
@@ -187,6 +194,21 @@ class Level:
         for enemy in self.enemies_sprites.sprites():
             if pygame.sprite.spritecollide(enemy, self.special_sprites, False):
                 enemy.change_speed()
+
+    def input_keys(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RETURN]:
+            self.create_menu(self.current_level, self.new_max_level)
+        if keys[pygame.K_ESCAPE]:
+            self.create_menu(self.current_level, 0)
+
+    def check_death(self):
+        if self.player.sprite.rect.top > screen_height:
+            self.create_menu(self.current_level, 0)
+
+    def check_win(self):
+        if pygame.sprite.spritecollide(self.player.sprite, self.goal, False):
+            self.create_menu(self.current_level, self.new_max_level)
 
     def run(self):
         self.scroll_x()
