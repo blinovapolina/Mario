@@ -3,7 +3,7 @@ from support import import_folder
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, surface, create_jump_particles):
+    def __init__(self, pos, surface, create_jump_particles, change_health):
         super(Player, self).__init__()
         self.import_assets()
         self.frame_index = 0
@@ -21,6 +21,7 @@ class Player(pygame.sprite.Sprite):
         self.speed = 8
         self.gravity = 0.8
         self.jump_speed = -16
+        self.collision_rectangle = pygame.Rect(self.rect.topleft, (50, self.rect.height))
 
         self.status = 'idle'
         self.face_right = True
@@ -28,6 +29,11 @@ class Player(pygame.sprite.Sprite):
         self.on_ceiling = False
         self.on_left = False
         self.on_right = False
+
+        self.change_health = change_health
+        self.damaged = False
+        self.duration_damage = 500
+        self.hurt_time = 0
 
     def import_assets(self):
         chatacter_path = 'graphics/character/'
@@ -55,22 +61,12 @@ class Player(pygame.sprite.Sprite):
         image = animation[int(self.frame_index)]
         if self.face_right:
             self.image = image
+            self.rect.bottomleft = self.collision_rectangle.bottomleft
         else:
             self.image = pygame.transform.flip(image, True, False)
+            self.rect.bottomright = self.collision_rectangle.bottomright
 
-        if self.on_ground and self.on_right:
-            self.rect = self.image.get_rect(bottomright=self.rect.bottomright)
-        elif self.on_ground and self.on_left:
-            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft)
-        elif self.on_ground:
-            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
-
-        if self.on_ceiling and self.on_right:
-            self.rect = self.image.get_rect(topright=self.rect.topright)
-        elif self.on_ceiling and self.on_left:
-            self.rect = self.image.get_rect(topleft=self.rect.topleft)
-        elif self.on_ceiling:
-            self.rect = self.image.get_rect(midtop=self.rect.midtop)
+        self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
 
     def run_dust_animation(self):
         if self.status == 'run' and self.on_ground:
@@ -117,13 +113,27 @@ class Player(pygame.sprite.Sprite):
 
     def add_gravity(self):
         self.direction.y += self.gravity
-        self.rect.y += self.direction.y
+        self.collision_rectangle.y += self.direction.y
 
     def jump(self):
         self.direction.y = self.jump_speed
+
+    def get_damage(self):
+        if not self.damaged:
+            self.change_health(-10)
+            self.damaged = True
+            self.hurt_time = pygame.time.get_ticks()
+
+    def not_damaged_timer(self):
+        if self.damaged:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.hurt_time >= self.duration_damage:
+                self.damaged = False
 
     def update(self):
         self.get_input()
         self.get_status_info()
         self.animate()
         self.run_dust_animation()
+        self.not_damaged_timer()
+

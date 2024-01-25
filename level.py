@@ -10,11 +10,11 @@ from level_data import *
 
 
 class Level:
-    def __init__(self, current_level, surface, create_menu, change_coins):
+    def __init__(self, current_level, surface, create_menu, change_coins, change_health):
         self.display_surface = surface
         self.change_coins = change_coins
+        self.change_health = change_health
         self.world_delta = 0
-        self.current_x = 0
 
         self.current_level = current_level
         level_data = levels[current_level]
@@ -24,7 +24,7 @@ class Level:
         player_layout = import_csv(level_data['player'])
         self.player = pygame.sprite.GroupSingle()
         self.goal_player = pygame.sprite.GroupSingle()
-        self.setup_player(player_layout)
+        self.setup_player(player_layout, change_health)
 
         terrain_layout = import_csv(level_data['terrain'])
         self.terrain_sprites = self.create_group(terrain_layout, 'terrain')
@@ -100,13 +100,13 @@ class Level:
                     group.add(sprite)
         return group
 
-    def setup_player(self, layout):
+    def setup_player(self, layout, change_health):
         for index_row, row in enumerate(layout):
             for index_col, cell in enumerate(row):
                 x = index_col * tile_size
                 y = index_row * tile_size
                 if cell == '0':
-                    sprite = Player((x, y), self.display_surface, self.create_jump_particles)
+                    sprite = Player((x, y), self.display_surface, self.create_jump_particles, change_health)
                     self.player.add(sprite)
                 if cell == '1':
                     hat_surface = pygame.image.load('graphics/character/hat.png').convert_alpha()
@@ -153,43 +153,34 @@ class Level:
 
     def horizontal_move_collision(self):
         player = self.player.sprite
-        player.rect.x += player.direction.x * player.speed
+        player.collision_rectangle.x += player.direction.x * player.speed
 
         for tile in self.terrain_sprites.sprites() + self.crates_sprites.sprites() + self.palms_sprites.sprites():
-            if tile.rect.colliderect(player.rect):
+            if tile.rect.colliderect(player.collision_rectangle):
                 if player.direction.x == 1:
-                    player.rect.right = tile.rect.left
+                    player.collision_rectangle.right = tile.rect.left
                     player.on_right = True
-                    self.current_x = player.rect.right
                 elif player.direction.x == -1:
-                    player.rect.left = tile.rect.right
+                    player.collision_rectangle.left = tile.rect.right
                     player.on_left = True
-                    self.current_x = player.rect.left
-
-        if player.on_left and (player.on_left < self.current_x or player.direction.x >= 0):
-            player.on_left = False
-        elif player.on_right and (player.on_right > self.current_x or player.direction.x <= 0):
-            player.on_right = False
 
     def vertical_move_collision(self):
         player = self.player.sprite
         player.add_gravity()
 
         for tile in self.terrain_sprites.sprites() + self.crates_sprites.sprites() + self.palms_sprites.sprites():
-            if tile.rect.colliderect(player.rect):
+            if tile.rect.colliderect(player.collision_rectangle):
                 if player.direction.y > 0:
-                    player.rect.bottom = tile.rect.top
+                    player.collision_rectangle.bottom = tile.rect.top
                     player.direction.y = 0
                     player.on_ground = True
                 elif player.direction.y < 0:
-                    player.rect.top = tile.rect.bottom
+                    player.collision_rectangle.top = tile.rect.bottom
                     player.direction.y = 0
                     player.on_ceiling = True
 
         if player.on_ground and player.direction.y < 0 or player.direction.y > 1:
             player.on_ground = False
-        if player.on_ceiling and player.direction.y > 0:
-            player.on_ceiling = False
 
     def enemy_reverse_speed(self):
         for enemy in self.enemies_sprites.sprites():

@@ -55,6 +55,10 @@ class Menu:
         self.setup_nodes()
         self.setup_icon()
 
+        self.start_time = pygame.time.get_ticks()
+        self.allow_input = False
+        self.timer_length = 300
+
     def setup_nodes(self):
         self.platform_levels = pygame.sprite.Group()
         for index, data in enumerate(levels.values()):
@@ -78,7 +82,7 @@ class Menu:
 
     def input(self):
         keys = pygame.key.get_pressed()
-        if not self.moving:
+        if not self.moving and self.allow_input:
             if keys[pygame.K_LEFT] and self.current_level > 0:
                 self.move_direction = self.get_movement_data('previous')
                 self.current_level -= 1
@@ -106,7 +110,14 @@ class Menu:
                 self.moving = False
                 self.move_direction = pygame.math.Vector2(0, 0)
 
+    def input_timer(self):
+        if not self.allow_input:
+            current_time = pygame.time.get_ticks() - self.start_time
+            if current_time - self.start_time >= self.timer_length:
+                self.allow_input = True
+
     def run(self):
+        self.input_timer()
         self.draw(self.display_surface)
         self.input()
         self.update_icon_pos()
