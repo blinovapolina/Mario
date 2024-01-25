@@ -35,6 +35,10 @@ class Player(pygame.sprite.Sprite):
         self.duration_damage = 500
         self.hurt_time = 0
 
+        self.jump_sound = pygame.mixer.Sound('audio/effects/jump.mp3')
+        self.jump_sound.set_volume(0.5)
+        self.hit_sound = pygame.mixer.Sound('audio/effects/hit.wav')
+
     def import_assets(self):
         chatacter_path = 'graphics/character/'
         self.animations = {
@@ -117,9 +121,11 @@ class Player(pygame.sprite.Sprite):
 
     def jump(self):
         self.direction.y = self.jump_speed
+        self.jump_sound.play()
 
     def get_damage(self):
         if not self.damaged:
+            self.hit_sound.play()
             self.change_health(-10)
             self.damaged = True
             self.hurt_time = pygame.time.get_ticks()

@@ -14,20 +14,28 @@ class Game:
         self.current_health = 100
         self.coins = 0
 
+        self.level_music = pygame.mixer.Sound('audio/level_music.wav')
+        self.menu_music = pygame.mixer.Sound('audio/menu_music.mp3')
+
         self.menu = Menu(0, self.max_level, screen, self.create_level)
         self.status = 'menu'
+        self.menu_music.play(loops=-1)
 
         self.info = Info_graphics(screen)
 
     def create_level(self, current_level):
         self.level = Level(current_level, self.screen, self.create_menu, self.change_coins, self.change_health)
         self.status = 'level'
+        self.menu_music.stop()
+        self.level_music.play(loops=-1)
 
     def create_menu(self, current_level, new_max_level):
         if new_max_level > self.max_level:
             self.max_level = new_max_level
         self.menu = Menu(current_level, self.max_level, self.screen, self.create_level)
         self.status = 'menu'
+        self.level_music.stop()
+        self.menu_music.play(loops=-1)
 
     def change_coins(self, amount):
         self.coins += amount
@@ -42,6 +50,8 @@ class Game:
             self.max_level = 0
             self.menu = Menu(0, self.max_level, self.screen, self.create_level)
             self.status = 'menu'
+            self.level_music.stop()
+            self.menu_music.play(loops=-1)
 
     def run(self):
         if self.status == 'menu':

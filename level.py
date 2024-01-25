@@ -57,6 +57,10 @@ class Level:
         self.dust_sprite = pygame.sprite.GroupSingle()
         self.player_on_ground = False
 
+        self.coin_sound = pygame.mixer.Sound('audio/effects/coin.wav')
+        self.stomp_sound = pygame.mixer.Sound('audio/effects/stomp.wav')
+        self.stomp_sound.set_volume(0.5)
+
     def create_group(self, layout, tile_type):
         group = pygame.sprite.Group()
 
@@ -205,6 +209,7 @@ class Level:
     def check_coin_collisions(self):
         coins_collided = pygame.sprite.spritecollide(self.player.sprite, self.coins_sprites, True)
         if coins_collided:
+            self.coin_sound.play()
             for coin in coins_collided:
                 self.change_coins(coin.value)
 
@@ -216,6 +221,7 @@ class Level:
                 enemy_top = enemy.rect.top
                 player_bottom = self.player.sprite.rect.bottom
                 if enemy_top < player_bottom < enemy_center and self.player.sprite.direction.y >= 0:
+                    self.stomp_sound.play()
                     self.player.sprite.direction.y = -15
                     enemy.kill()
                 else:
